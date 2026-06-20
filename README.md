@@ -23,8 +23,8 @@ docker compose up --build
 Drop some documents (`.md`, `.txt`, `.pdf`) into `./data/`, then index and ask:
 
 ```bash
-# index everything under ./data
-curl -X POST localhost:8000/ingest -H 'content-type: application/json' -d '{"path":"data"}'
+# index everything under ./data  (or pass {"path":"subdir"} for a subfolder)
+curl -X POST localhost:8000/ingest -H 'content-type: application/json' -d '{}'
 
 # or upload a single file
 curl -X POST localhost:8000/ingest/upload -F file=@./examples/aquila-overview.md

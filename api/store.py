@@ -1,7 +1,7 @@
 """Thin helpers over Ollama (embeddings + generation) and Qdrant (vector store)."""
 import httpx
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams
+from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, VectorParams
 
 import config
 
@@ -41,6 +41,17 @@ def ensure_collection(dim: int) -> None:
 
 def upsert(points) -> None:
     _qdrant.upsert(config.COLLECTION, points=points)
+
+
+def delete_source(name: str) -> None:
+    """Remove all chunks previously stored for a given source file."""
+    if _qdrant.collection_exists(config.COLLECTION):
+        _qdrant.delete(
+            config.COLLECTION,
+            points_selector=Filter(
+                must=[FieldCondition(key="source", match=MatchValue(value=name))]
+            ),
+        )
 
 
 def search(vector: list[float], k: int):

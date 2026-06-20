@@ -28,7 +28,8 @@ DATA_DIR = pathlib.Path("data")
 
 
 class IngestRequest(BaseModel):
-    path: str = "data"
+    # Path relative to ./data; empty = the whole data directory.
+    path: str = ""
 
 
 class AskRequest(BaseModel):
@@ -56,13 +57,15 @@ def ingest_endpoint(body: IngestRequest) -> dict:
     return {"path": body.path, "ingested_chunks": ingest.ingest_path(body.path)}
 
 
+# Sync def → FastAPI runs it in a threadpool, so the blocking embed/ingest work
+# never stalls the event loop (health/ask stay responsive during an upload).
 @app.post("/ingest/upload")
-async def ingest_upload(file: UploadFile) -> dict:
+def ingest_upload(file: UploadFile) -> dict:
     DATA_DIR.mkdir(exist_ok=True)
     dest = DATA_DIR / pathlib.Path(file.filename).name
     with dest.open("wb") as out:
         shutil.copyfileobj(file.file, out)
-    return {"file": dest.name, "ingested_chunks": ingest.ingest_path(str(dest))}
+    return {"file": dest.name, "ingested_chunks": ingest.ingest_path(dest.name)}
 
 
 @app.post("/ask")
