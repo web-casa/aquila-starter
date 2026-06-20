@@ -1,0 +1,11 @@
+# your documents stay local
+data/*
+!data/.gitkeep
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+
+# env
+.env
